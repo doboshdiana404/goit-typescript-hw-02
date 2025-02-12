@@ -1,7 +1,19 @@
 import s from '../ImageGallery.module.css';
 import { FaMagnifyingGlassPlus } from 'react-icons/fa6';
+interface Image {
+  id: string;
+  urls: {
+    small: string;
+  };
+  alt_description?: string;
+}
 
-export default function ImageCard({ item, openModal }) {
+interface ImageCardProps {
+  item: Image;
+  openModal: (id: string) => void;
+}
+
+const ImageCard: React.FC<ImageCardProps> = ({ item, openModal }) => {
   return (
     <div className={s['imageContainer']}>
       <img
@@ -17,4 +29,5 @@ export default function ImageCard({ item, openModal }) {
       </div>
     </div>
   );
-}
+};
+export default ImageCard;

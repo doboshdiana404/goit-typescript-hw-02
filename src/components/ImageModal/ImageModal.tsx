@@ -1,6 +1,28 @@
 import Modal from 'react-modal';
 import s from '../ImageGallery/ImageGallery.module.css';
-export default function ImageModal({ closeModal, images, selectedImageId }) {
+
+interface Imagemodal {
+  id: string;
+  urls: {
+    full: string;
+  };
+  alt_description?: string;
+  user?: {
+    name: string;
+  };
+}
+
+interface ImageModalProps {
+  closeModal: () => void;
+  images: Imagemodal[];
+  selectedImageId: string | null;
+}
+
+const ImageModal: React.FC<ImageModalProps> = ({
+  images,
+  closeModal,
+  selectedImageId,
+}) => {
   const selectedImage = images.find(item => item.id === selectedImageId);
 
   return (
@@ -47,11 +69,12 @@ export default function ImageModal({ closeModal, images, selectedImageId }) {
               <p className={s.modalDescription}>
                 {selectedImage.alt_description}
               </p>
-              <p>{selectedImage.user.name}</p>
+              {selectedImage.user?.name && <p>{selectedImage.user.name}</p>}{' '}
             </div>
           )}
         </Modal>
       )}
     </>
   );
-}
+};
+export default ImageModal;

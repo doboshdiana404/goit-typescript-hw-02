@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import LoadMoreBtn from './LoadMoreBtn/LoadMoreBtn';
 import SearchBar from './SearchBar/SearchBar';
@@ -8,22 +7,32 @@ import axios from 'axios';
 import ErrorMessage from './ErrorMessage/ErrorMessage';
 import toast from 'react-hot-toast';
 import Modal from 'react-modal';
+import ImageGallery from './ImageGallery/ImageGallery';
 import ImageModal from './ImageModal/ImageModal';
-function App() {
-  const [images, setImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [page, setPage] = useState(1);
-  const [query, setQuery] = useState('a');
-  const [hasMoreImages, setHasMoreImages] = useState(true);
-  const [selectedImageId, setSelectedImageId] = useState(null);
+interface Image {
+  id: string;
+  urls: {
+    small: string;
+    regular: string;
+    full: string;
+  };
+  alt_description: string;
+}
+const App: React.FC = () => {
+  const [images, setImages] = useState<Image[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [query, setQuery] = useState<string>('a');
+  const [hasMoreImages, setHasMoreImages] = useState<boolean>(true);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   useEffect(() => {
     Modal.setAppElement('#main');
     const getImagesData = async () => {
       try {
         setIsLoading(true);
         setIsError(false);
-        const { data } = await axios.get(
+        const { data } = await axios.get<{ results: Image[] }>(
           `https://api.unsplash.com/search/photos/`,
           {
             params: {
@@ -63,7 +72,7 @@ function App() {
       setPage(prev => prev + 1);
     }
   };
-  const handleChangeQuery = newQuery => {
+  const handleChangeQuery = (newQuery: string) => {
     if (newQuery === query) {
       return;
     }
@@ -73,7 +82,7 @@ function App() {
     setImages([]);
     setHasMoreImages(true);
   };
-  const openModal = id => {
+  const openModal = (id: string) => {
     setSelectedImageId(id);
     document.body.style.overflow = 'hidden';
   };
@@ -82,15 +91,18 @@ function App() {
     document.body.style.overflow = 'auto';
   };
   useEffect(() => {
-    const handleKeyPress = e => {
+    const handleKeyPress = (e: KeyboardEvent) => {
       if (selectedImageId === null) return;
 
       const currentIndex = images.findIndex(img => img.id === selectedImageId);
-
+      if (currentIndex === -1) {
+        setSelectedImageId(null);
+        return;
+      }
       if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
-        setSelectedImageId(images[currentIndex + 1].id);
+        setSelectedImageId(images[currentIndex + 1]?.id || null);
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
-        setSelectedImageId(images[currentIndex - 1].id);
+        setSelectedImageId(images[currentIndex - 1]?.id || null);
       }
     };
 
@@ -103,12 +115,7 @@ function App() {
   return (
     <div id="main">
       <SearchBar onSearch={handleChangeQuery} />
-      <ImageGallery
-        images={images}
-        selectedImageId={selectedImageId}
-        closeModal={closeModal}
-        openModal={openModal}
-      />
+      <ImageGallery images={images} openModal={openModal} />
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
       {hasMoreImages && <LoadMoreBtn handleChangePage={handleChangePage} />}
@@ -121,6 +128,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;
